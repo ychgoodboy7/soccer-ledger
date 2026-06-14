@@ -123,8 +123,9 @@ body {
   border-color: #05944f; box-shadow: 0 0 0 3px rgba(5,148,79,0.08); background: #fff;
 }
 .form-group textarea { resize: vertical; min-height: 60px; }
+.form-group #photoPreviewWrap { margin-top: 10px; }
 .form-group .photo-preview {
-  max-width: 100%; max-height: 150px; border-radius: 10px; margin-top: 10px; border: 1px solid rgba(0,0,0,0.06);
+  max-width: 100%; max-height: 150px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); display: block;
 }
 .form-actions { display: flex; gap: 10px; margin-top: 22px; }
 .form-actions button { flex: 1; }
@@ -322,7 +323,10 @@ body {
     <div class="form-group">
       <label>彩票照片（可选）</label>
       <input type="file" id="formPhoto" accept="image/*" onchange="previewPhoto()">
-      <img class="photo-preview" id="photoPreview" style="display:none">
+      <div id="photoPreviewWrap" style="display:none;position:relative;display:none">
+        <img class="photo-preview" id="photoPreview">
+        <button type="button" onclick="removePhoto()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:14px;cursor:pointer;line-height:26px;text-align:center">✕</button>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn" style="background:#f0f0f0;color:#333" onclick="closeModal()">取消</button>
@@ -472,7 +476,7 @@ function showAddModal() {
   document.getElementById('formBetAmount').value = '';
   document.getElementById('formWinAmount').value = '0';
   document.getElementById('formPhoto').value = '';
-  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPreviewWrap').style.display = 'none';
   document.getElementById('recordModal').classList.add('show');
 }
 
@@ -488,12 +492,13 @@ function showEditModal(id) {
   document.getElementById('formBetAmount').value = b.betAmount;
   document.getElementById('formWinAmount').value = b.winAmount;
   document.getElementById('formPhoto').value = '';
+  const wrap = document.getElementById('photoPreviewWrap');
   const preview = document.getElementById('photoPreview');
   if (b.photo) {
     preview.src = b.photo;
-    preview.style.display = 'block';
+    wrap.style.display = 'inline-block';
   } else {
-    preview.style.display = 'none';
+    wrap.style.display = 'none';
   }
   document.getElementById('recordModal').classList.add('show');
 }
@@ -511,10 +516,16 @@ function previewPhoto() {
       tempPhotoData = resized;
       const preview = document.getElementById('photoPreview');
       preview.src = resized;
-      preview.style.display = 'block';
+      document.getElementById('photoPreviewWrap').style.display = 'inline-block';
     });
   };
   reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  tempPhotoData = null;
+  document.getElementById('formPhoto').value = '';
+  document.getElementById('photoPreviewWrap').style.display = 'none';
 }
 
 function resizeImage(dataUrl, maxW, callback) {
