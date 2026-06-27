@@ -1,4 +1,4 @@
-const CACHE = 'soccer-v1';
+const CACHE = 'soccer-v2';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -8,7 +8,16 @@ const FILES = [
 ];
 
 self.addEventListener('install', e => {
+  e.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+    ))
+  );
 });
 
 self.addEventListener('fetch', e => {

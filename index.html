@@ -453,7 +453,7 @@ function populateMonthFilters() {
 let expandedMonths = {}; // { '2026-06': true }
 
 function renderDetail() {
-  const bets = getBets().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const bets = getBets().sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
   const container = document.getElementById('recordList');
   const empty = document.getElementById('emptyState');
   document.getElementById('capitalAmount').textContent = formatMoney(getCapitalPool());
