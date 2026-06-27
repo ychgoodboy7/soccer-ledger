@@ -98,6 +98,27 @@ body {
 .record-card .edit-btn2 { background: #f1f3f5; color: #495057; }
 .record-card .del-btn { background: #fff0f0; color: #e74c3c; }
 
+/* 月份分组 */
+.month-group { margin-bottom: 16px; }
+.month-header {
+  display: flex; align-items: center; gap: 8px; padding: 10px 6px;
+  cursor: pointer; user-select: none; border-bottom: 1px solid #e9ecef;
+}
+.month-arrow { font-size: 10px; color: #adb5bd; transition: transform 0.2s; display: inline-block; }
+.month-arrow.open { transform: rotate(90deg); }
+.month-info { flex: 1; min-width: 0; }
+.month-label { font-weight: 700; font-size: 14px; color: #1a1a1a; }
+.month-meta { font-size: 12px; color: #868e96; margin-left: 6px; }
+.month-pnl { font-size: 13px; font-weight: 600; }
+.month-pnl.positive { color: #05944f; }
+.month-pnl.negative { color: #e74c3c; }
+.month-del {
+  background: none; border: none; color: #adb5bd; font-size: 11px;
+  cursor: pointer; padding: 4px 8px; border-radius: 4px; white-space: nowrap;
+}
+.month-del:active { background: #fff0f0; color: #e74c3c; }
+.month-body { }
+
 /* Modal */
 .modal-overlay {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -244,7 +265,12 @@ body {
 
 <!-- 统计页 -->
 <div class="page" id="page-stats">
-  <h4 style="font-size:15px;margin-bottom:10px">数据总览</h4>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <h4 style="font-size:15px;margin:0">数据总览</h4>
+    <select id="statsMonthFilter" onchange="renderStats()" style="padding:4px 8px;border:1.5px solid #e9ecef;border-radius:8px;font-size:12px;background:#f8f9fa;color:#495057;outline:none">
+      <option value="">全部</option>
+    </select>
+  </div>
   <div class="stats-grid" id="statsGrid"></div>
   <div class="chart-container">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -410,16 +436,22 @@ function populateMonthFilters() {
   const months = [...new Set(bets.map(b => getMonthLabel(b.date)))].sort().reverse();
   const chartSel = document.getElementById('chartMonthFilter');
   const streakSel = document.getElementById('streakMonthFilter');
+  const statsSel = document.getElementById('statsMonthFilter');
   const chartVal = chartSel.value;
   const streakVal = streakSel.value;
+  const statsVal = statsSel.value;
   const opts = '<option value="">全部</option>' + months.map(m => `<option value="${m}">${m}</option>`).join('');
   chartSel.innerHTML = opts;
   streakSel.innerHTML = opts;
+  statsSel.innerHTML = opts;
   chartSel.value = chartVal;
   streakSel.value = streakVal;
+  statsSel.value = statsVal;
 }
 
 // ==================== 明细页 ====================
+let expandedMonths = {}; // { '2026-06': true }
+
 function renderDetail() {
   const bets = getBets().sort((a, b) => new Date(b.date) - new Date(a.date));
   const container = document.getElementById('recordList');
@@ -432,29 +464,83 @@ function renderDetail() {
     return;
   }
   empty.style.display = 'none';
-  container.innerHTML = bets.map(b => {
-    const win = parseFloat(b.winAmount) || 0;
-    const bet = parseFloat(b.betAmount) || 0;
-    const profit = win - bet;
-    const winClass = win > 0 ? 'win' : 'loss';
-    const profitClass = profit >= 0 ? 'positive' : 'negative';
-    return `
-      <div class="record-card">
-        <div class="date">${b.date}</div>
-        <div class="content">${escapeHtml(b.content)}</div>
-        <div class="row">
-          <span class="bet-amount">投注 ${formatMoney(bet)}</span>
-          <span class="win-amount ${winClass}">${win > 0 ? '中奖 ' + formatMoney(win) : '未中奖'}</span>
+
+  // group by month
+  const groups = {};
+  bets.forEach(b => {
+    const m = getMonthLabel(b.date);
+    if (!groups[m]) groups[m] = { label: formatMonthDisplay(m), bets: [], totalBet: 0, totalWin: 0 };
+    groups[m].bets.push(b);
+    groups[m].totalBet += parseFloat(b.betAmount) || 0;
+    groups[m].totalWin += parseFloat(b.winAmount) || 0;
+  });
+
+  let html = '';
+  const sortedMonths = Object.keys(groups).sort().reverse();
+  sortedMonths.forEach(m => {
+    const g = groups[m];
+    const pnl = g.totalWin - g.totalBet;
+    const pnlClass = pnl >= 0 ? 'positive' : 'negative';
+    const expanded = expandedMonths[m] !== false; // default expanded
+    html += `
+      <div class="month-group">
+        <div class="month-header" onclick="toggleMonth('${m}')">
+          <span class="month-arrow ${expanded ? 'open' : ''}">▶</span>
+          <div class="month-info">
+            <span class="month-label">${g.label}</span>
+            <span class="month-meta">${g.bets.length}笔 · 投${formatMoney(g.totalBet)} · </span>
+            <span class="month-pnl ${pnlClass}">${pnl >= 0 ? '+' : ''}${formatMoney(pnl)}</span>
+          </div>
+          <button class="month-del" onclick="event.stopPropagation();confirmDeleteMonth('${m}')">删除本月</button>
         </div>
-        ${profit !== 0 ? `<div style="text-align:right;margin-top:4px"><span class="profit ${profitClass}">${profit >= 0 ? '+' : ''}${formatMoney(profit)}</span></div>` : ''}
-        ${b.photo ? `<img class="photo-thumb" src="${b.photo}" onclick="event.stopPropagation();viewImage('${b.photo}')" alt="彩票照片">` : ''}
-        <div class="actions">
-          <button class="edit-btn2" onclick="showEditModal('${b.id}')">编辑</button>
-          <button class="del-btn" onclick="confirmDelete('${b.id}')">删除</button>
+        <div class="month-body" style="${expanded ? '' : 'display:none'}">
+          ${g.bets.map(b => {
+            const win = parseFloat(b.winAmount) || 0;
+            const bet = parseFloat(b.betAmount) || 0;
+            const profit = win - bet;
+            const winClass = win > 0 ? 'win' : 'loss';
+            const profitClass = profit >= 0 ? 'positive' : 'negative';
+            return `
+              <div class="record-card">
+                <div class="date">${b.date}</div>
+                <div class="content">${escapeHtml(b.content)}</div>
+                <div class="row">
+                  <span class="bet-amount">投注 ${formatMoney(bet)}</span>
+                  <span class="win-amount ${winClass}">${win > 0 ? '中奖 ' + formatMoney(win) : '未中奖'}</span>
+                </div>
+                ${profit !== 0 ? `<div style="text-align:right;margin-top:4px"><span class="profit ${profitClass}">${profit >= 0 ? '+' : ''}${formatMoney(profit)}</span></div>` : ''}
+                ${b.photo ? `<img class="photo-thumb" src="${b.photo}" onclick="event.stopPropagation();viewImage('${b.photo}')" alt="彩票照片">` : ''}
+                <div class="actions">
+                  <button class="edit-btn2" onclick="showEditModal('${b.id}')">编辑</button>
+                  <button class="del-btn" onclick="confirmDelete('${b.id}')">删除</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
-  }).join('');
+  });
+  container.innerHTML = html;
+}
+
+function formatMonthDisplay(label) {
+  const [y, m] = label.split('-');
+  return y + '年' + parseInt(m) + '月';
+}
+
+function toggleMonth(m) {
+  expandedMonths[m] = expandedMonths[m] === false ? true : false;
+  renderDetail();
+}
+
+function confirmDeleteMonth(m) {
+  const display = formatMonthDisplay(m);
+  showConfirm('确定要删除「' + display + '」的所有记录吗？此操作不可恢复。', function() {
+    const bets = getBets().filter(b => getMonthLabel(b.date) !== m);
+    saveBets(bets);
+    renderDetail();
+  });
 }
 
 function escapeHtml(s) {
@@ -622,7 +708,11 @@ function saveCapital() {
 
 // ==================== 统计页 ====================
 function renderStats() {
-  const bets = getBets();
+  const month = document.getElementById('statsMonthFilter') ? document.getElementById('statsMonthFilter').value : '';
+  let bets = getBets();
+  if (month) {
+    bets = bets.filter(b => getMonthLabel(b.date) === month);
+  }
   const totalBet = bets.reduce((s, b) => s + (parseFloat(b.betAmount) || 0), 0);
   const totalWin = bets.reduce((s, b) => s + (parseFloat(b.winAmount) || 0), 0);
   const winCount = bets.filter(b => (parseFloat(b.winAmount) || 0) > 0).length;
