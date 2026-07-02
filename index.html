@@ -437,9 +437,10 @@ function populateMonthFilters() {
   const chartSel = document.getElementById('chartMonthFilter');
   const streakSel = document.getElementById('streakMonthFilter');
   const statsSel = document.getElementById('statsMonthFilter');
-  const chartVal = chartSel.value;
-  const streakVal = streakSel.value;
-  const statsVal = statsSel.value;
+  const latest = months.length > 0 ? months[0] : '';
+  const chartVal = chartSel.value || latest;
+  const streakVal = streakSel.value || latest;
+  const statsVal = statsSel.value || latest;
   const opts = '<option value="">全部</option>' + months.map(m => `<option value="${m}">${m}</option>`).join('');
   chartSel.innerHTML = opts;
   streakSel.innerHTML = opts;
