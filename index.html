@@ -781,34 +781,64 @@ function renderChart() {
   const month = document.getElementById('chartMonthFilter').value;
   const settings = getSettings();
   const topups = settings.topups || [];
-  let bets = getBets().sort((a, b) => new Date(a.date) - new Date(b.date));
-  if (month) {
-    bets = bets.filter(b => getMonthLabel(b.date) === month);
-  }
-  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  const allBets = getBets().sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
 
-  // merge bets and topups chronologically
+  // merge all bets and topups chronologically
   const events = [];
-  bets.forEach(b => { events.push({ type: 'bet', date: b.date, id: b.id, win: parseFloat(b.winAmount) || 0, bet: parseFloat(b.betAmount) || 0 }); });
+  allBets.forEach(b => { events.push({ type: 'bet', date: b.date, id: b.id, win: parseFloat(b.winAmount) || 0, bet: parseFloat(b.betAmount) || 0 }); });
   topups.forEach(t => { events.push({ type: 'topup', date: t.date, id: t.id, amount: parseFloat(t.amount) || 0 }); });
   events.sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
 
-  const labels = ['起始'];
-  const data = [settings.initialCapital];
-  let capital = settings.initialCapital;
-  let betNum = 0;
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
-  events.forEach(e => {
-    if (e.type === 'topup') {
-      capital += e.amount;
-      labels.push('+¥' + e.amount.toFixed(0));
-    } else {
-      capital = capital + e.win - e.bet;
-      betNum++;
-      labels.push('#' + betNum);
-    }
-    data.push(parseFloat(capital.toFixed(2)));
-  });
+  let labels, data, capital;
+
+  if (month) {
+    // Compute starting capital: initial + all events before the selected month
+    capital = settings.initialCapital;
+    const beforeEvents = [];
+    const monthEvents = [];
+    events.forEach(e => {
+      if (getMonthLabel(e.date) < month) {
+        capital += e.type === 'topup' ? e.amount : (e.win - e.bet);
+        beforeEvents.push(e);
+      } else if (getMonthLabel(e.date) === month) {
+        monthEvents.push(e);
+      }
+    });
+
+    const startCapital = parseFloat(capital.toFixed(2));
+    labels = [formatMonthDisplay(month) + '初'];
+    data = [startCapital];
+    let betNum = 0;
+    monthEvents.forEach(e => {
+      if (e.type === 'topup') {
+        capital += e.amount;
+        labels.push('+¥' + e.amount.toFixed(0));
+      } else {
+        capital = capital + e.win - e.bet;
+        betNum++;
+        labels.push('#' + betNum);
+      }
+      data.push(parseFloat(capital.toFixed(2)));
+    });
+  } else {
+    labels = ['起始'];
+    data = [settings.initialCapital];
+    capital = settings.initialCapital;
+    let betNum = 0;
+    events.forEach(e => {
+      if (e.type === 'topup') {
+        capital += e.amount;
+        labels.push('+¥' + e.amount.toFixed(0));
+      } else {
+        capital = capital + e.win - e.bet;
+        betNum++;
+        labels.push('#' + betNum);
+      }
+      data.push(parseFloat(capital.toFixed(2)));
+    });
+  }
 
   const ctx = document.getElementById('trendChart').getContext('2d');
   chartInstance = new Chart(ctx, {
