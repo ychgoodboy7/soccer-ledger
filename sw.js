@@ -1,4 +1,4 @@
-const CACHE = 'soccer-v2';
+const CACHE = 'soccer-v3';
 const FILES = [
   './index.html',
   './manifest.json',

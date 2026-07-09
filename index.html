@@ -249,9 +249,15 @@ body {
     <div class="label">总资金池</div>
     <div class="amount" id="capitalAmount">¥0.00</div>
     <button class="edit-btn" onclick="showCapitalEdit()">修改初始本金</button>
+    <button class="edit-btn" onclick="showTopupEdit()" style="margin-left:6px">补充资金</button>
     <div class="inline-edit" id="capitalEdit" style="display:none">
       <input type="number" id="capitalInput" placeholder="输入初始本金" step="0.01">
       <button onclick="saveCapital()">保存</button>
+    </div>
+    <div class="inline-edit" id="topupEdit" style="display:none">
+      <input type="date" id="topupDate">
+      <input type="number" id="topupAmount" placeholder="金额" step="0.01" style="width:100px">
+      <button onclick="saveTopup()">保存</button>
     </div>
   </div>
   <button class="btn btn-primary" onclick="showAddModal()">+ 新建投注记录</button>
@@ -403,9 +409,11 @@ function saveSettings(s) {
 function getCapitalPool() {
   const bets = getBets();
   const s = getSettings();
+  const topups = s.topups || [];
   const totalWin = bets.reduce((sum, b) => sum + (parseFloat(b.winAmount) || 0), 0);
   const totalBet = bets.reduce((sum, b) => sum + (parseFloat(b.betAmount) || 0), 0);
-  return s.initialCapital + totalWin - totalBet;
+  const totalTopup = topups.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+  return s.initialCapital + totalTopup + totalWin - totalBet;
 }
 
 function formatMoney(n) {
@@ -702,8 +710,34 @@ function showCapitalEdit() {
 function saveCapital() {
   const val = parseFloat(document.getElementById('capitalInput').value);
   if (isNaN(val) || val < 0) { alert('请输入有效的本金'); return; }
-  saveSettings({ initialCapital: val });
+  const s = getSettings();
+  s.initialCapital = val;
+  saveSettings(s);
   document.getElementById('capitalEdit').style.display = 'none';
+  renderDetail();
+}
+
+// ==================== 补充资金 ====================
+function showTopupEdit() {
+  const el = document.getElementById('topupEdit');
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+  if (el.style.display === 'flex') {
+    document.getElementById('topupDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('topupAmount').value = '';
+    document.getElementById('topupAmount').focus();
+  }
+}
+
+function saveTopup() {
+  const date = document.getElementById('topupDate').value;
+  const amount = parseFloat(document.getElementById('topupAmount').value);
+  if (!date) { alert('请选择日期'); return; }
+  if (isNaN(amount) || amount <= 0) { alert('请输入有效的补充金额'); return; }
+  const s = getSettings();
+  if (!s.topups) s.topups = [];
+  s.topups.push({ id: Date.now(), date: date, amount: amount });
+  saveSettings(s);
+  document.getElementById('topupEdit').style.display = 'none';
   renderDetail();
 }
 
@@ -746,21 +780,33 @@ let chartInstance = null;
 function renderChart() {
   const month = document.getElementById('chartMonthFilter').value;
   const settings = getSettings();
+  const topups = settings.topups || [];
   let bets = getBets().sort((a, b) => new Date(a.date) - new Date(b.date));
   if (month) {
     bets = bets.filter(b => getMonthLabel(b.date) === month);
   }
   if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
+  // merge bets and topups chronologically
+  const events = [];
+  bets.forEach(b => { events.push({ type: 'bet', date: b.date, id: b.id, win: parseFloat(b.winAmount) || 0, bet: parseFloat(b.betAmount) || 0 }); });
+  topups.forEach(t => { events.push({ type: 'topup', date: t.date, id: t.id, amount: parseFloat(t.amount) || 0 }); });
+  events.sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
+
   const labels = ['起始'];
   const data = [settings.initialCapital];
   let capital = settings.initialCapital;
+  let betNum = 0;
 
-  bets.forEach((b, i) => {
-    const win = parseFloat(b.winAmount) || 0;
-    const bet = parseFloat(b.betAmount) || 0;
-    capital = capital + win - bet;
-    labels.push('#' + (i + 1));
+  events.forEach(e => {
+    if (e.type === 'topup') {
+      capital += e.amount;
+      labels.push('+¥' + e.amount.toFixed(0));
+    } else {
+      capital = capital + e.win - e.bet;
+      betNum++;
+      labels.push('#' + betNum);
+    }
     data.push(parseFloat(capital.toFixed(2)));
   });
 
