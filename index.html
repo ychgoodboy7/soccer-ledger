@@ -73,30 +73,10 @@ body {
   box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03);
   border-left: 3px solid transparent; transition: border-color 0.2s;
 }
-.record-card:has(.win-amount.win) { border-left-color: #e74c3c; }
-.record-card .date { font-size: 11px; color: #adb5bd; margin-bottom: 8px; letter-spacing: 0.03em; }
-.record-card .content { font-size: 14px; font-weight: 600; margin-bottom: 10px; line-height: 1.55; color: #1a1a1a; }
-.record-card .row { display: flex; justify-content: space-between; align-items: center; }
-.record-card .row + .row { margin-top: 4px; }
-.record-card .bet-amount { font-size: 13px; color: #868e96; }
-.record-card .win-amount { font-size: 15px; font-weight: 700; }
-.record-card .win-amount.win { color: #e74c3c; }
-.record-card .win-amount.loss { color: #adb5bd; }
-.record-card .profit { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
-.record-card .profit.positive { color: #05944f; }
-.record-card .profit.negative { color: #e74c3c; }
 .record-card .photo-thumb {
   width: 64px; height: 64px; object-fit: cover; border-radius: 8px;
-  margin-top: 10px; cursor: pointer; border: 1px solid rgba(0,0,0,0.06);
+  cursor: pointer; border: 1px solid rgba(0,0,0,0.06);
 }
-.record-card .actions { display: flex; gap: 8px; margin-top: 12px; }
-.record-card .actions button {
-  flex: 1; padding: 7px; border: none; border-radius: 8px; font-size: 12px;
-  cursor: pointer; font-weight: 500; transition: opacity 0.15s;
-}
-.record-card .actions button:active { opacity: 0.7; }
-.record-card .edit-btn2 { background: #f1f3f5; color: #495057; }
-.record-card .del-btn { background: #fff0f0; color: #e74c3c; }
 
 /* 月份分组 */
 .month-group { margin-bottom: 16px; }
@@ -239,17 +219,616 @@ body {
   font-weight: 600; transition: background 0.15s;
 }
 .inline-edit button:active { background: rgba(255,255,255,0.4); }
+
+/* ===================== 新版布局（窄屏=卡片原样，宽屏=桌面表格化） ===================== */
+.app-main { min-height: 100vh; }
+.nav-brand { display: none; }
+.nav-group { display: flex; flex: 1; }
+
+/* 明细页工具栏（手机：整行主按钮；桌面：标题+按钮） */
+.page-toolbar { margin-top: 14px; }
+.page-title { display: none; }
+.add-btn { width: 100%; }
+#recordList { margin-top: 12px; }
+
+/* 资金池卡片：信息 + 按钮组 */
+.cap-main { margin-top: 6px; }
+.cap-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.cap-actions .edit-btn { margin: 0; }
+.inline-edit { margin-top: 12px; }
+.capital-card .inline-edit { width: 100%; }
+
+/* 记录卡片（窄屏）— 新子元素类 */
+.record-card { display: flex; flex-wrap: wrap; align-items: center; }
+.record-card.win { border-left-color: #e74c3c; }
+.record-card .c-date { font-size: 11px; color: #adb5bd; width: 100%; margin-bottom: 6px; letter-spacing: .03em; }
+.record-card .c-content { font-size: 14px; font-weight: 600; width: 100%; margin-bottom: 8px; line-height: 1.55; color: #1a1a1a; }
+.record-card .c-bet { font-size: 13px; color: #868e96; margin-right: auto; }
+.record-card .c-bet::before { content: '投注 '; }
+.record-card .c-win { font-size: 15px; font-weight: 700; margin-left: auto; }
+.record-card .c-win.win { color: #e74c3c; }
+.record-card .c-win.win::before { content: '中奖 '; font-weight: 600; font-size: 12px; }
+.record-card .c-win.loss { color: #adb5bd; font-weight: 600; }
+.record-card .c-profit { width: 100%; text-align: right; margin-top: 6px; font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+.record-card .c-profit.positive { color: #05944f; }
+.record-card .c-profit.negative { color: #e74c3c; }
+.record-card .c-profit.is-zero { display: none; }
+.record-card .c-photo { width: 100%; margin-top: 8px; }
+.record-card .c-photo:has(.no-photo) { display: none; }
+.record-card .c-photo .no-photo { display: none; }
+.record-card .c-actions { display: flex; gap: 8px; width: 100%; margin-top: 10px; }
+.record-card .c-actions button { flex: 1; padding: 7px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 500; transition: opacity .15s; }
+.record-card .c-actions .edit-btn2 { background: #f1f3f5; color: #495057; }
+.record-card .c-actions .del-btn { background: #fff0f0; color: #e74c3c; }
+.record-card .c-actions button:hover { opacity: .75; }
+.rec-head { display: none; }
+.chart-box { position: relative; height: 260px; }
+
+/* 月份头在窄屏保持原样（分组标题） */
+.month-header { border-bottom: 1px solid #e9ecef; }
+
+/* ===================== 桌面端（≥1024px） ===================== */
+@media (min-width: 1024px) {
+  body {
+    max-width: none;
+    padding-bottom: 0;
+    background: #eef1f4;
+  }
+
+  /* 左侧导航 */
+  .tab-bar {
+    left: 0; right: auto; top: 0; bottom: 0; transform: none;
+    width: 236px; max-width: none; height: 100vh;
+    flex-direction: column; justify-content: flex-start; align-items: stretch;
+    padding: 18px 14px calc(18px + env(safe-area-inset-bottom, 0));
+    border-top: none; border-right: 1px solid rgba(0,0,0,.07);
+    background: rgba(255,255,255,.96); backdrop-filter: blur(16px);
+    z-index: 150;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 17px; font-weight: 800; color: #05944f;
+    padding: 6px 12px 20px;
+  }
+  .nav-brand span { font-size: 20px; }
+  .brand-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 11px;
+    background: linear-gradient(135deg, #0aa75c, #047a41);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 14px -4px rgba(5,148,79,.55);
+  }
+  .nav-group { flex-direction: column; gap: 6px; flex: 0 0 auto; }
+  .tab-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 10px;
+    font-size: 14px; text-align: left; justify-content: flex-start;
+    transition: background .15s, color .15s;
+  }
+  .tab-item .icon { font-size: 18px; margin: 0; }
+  .tab-item.active { color: #05944f; background: rgba(5,148,79,.08); }
+  .tab-item:not(.active):hover { background: #f1f3f5; }
+
+  .app-main { margin-left: 236px; padding: 24px 32px 64px; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 0 20px; }
+  .page.active { display: block; }
+
+  /* 明细页头部 */
+  .capital-card { padding: 24px 28px; }
+  .cap-main {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    flex-wrap: wrap; margin-top: 0;
+  }
+  .capital-card .label { font-size: 13px; }
+  .capital-card .amount { font-size: 46px; }
+  .cap-actions { margin-top: 0; }
+  .capital-card .inline-edit { max-width: 420px; }
+
+  /* 工具栏 */
+  .page-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 22px 0 4px;
+  }
+  .page-title { display: block; font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
+  .add-btn { width: auto; padding: 11px 24px; border-radius: 10px; font-size: 14px; }
+  #recordList { margin-top: 8px; }
+
+  /* 记录：月份面板 + 表格行 */
+  .month-group {
+    background: #fff; border-radius: 14px; overflow: hidden; margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 10px rgba(0,0,0,.04);
+  }
+  .month-header { padding: 13px 20px; border-bottom: 1px solid #eef1f4; background: #fbfcfd; }
+  .month-label { font-size: 15px; }
+  .month-del:hover { background: #fff0f0; color: #e74c3c; }
+
+  .rec-head {
+    display: grid;
+    grid-template-columns: 106px minmax(0, 1fr) 120px 130px 110px 84px 170px;
+    column-gap: 14px; align-items: center;
+    padding: 10px 20px; background: #f6f8f9;
+    font-size: 12px; color: #868e96; font-weight: 600;
+    border-bottom: 1px solid #eef1f4; letter-spacing: .02em;
+  }
+  .record-card {
+    display: grid;
+    grid-template-columns: 106px minmax(0, 1fr) 120px 130px 110px 84px 170px;
+    column-gap: 14px; align-items: center;
+    background: #fff; border-radius: 0; border-left: none; box-shadow: none;
+    margin: 0; padding: 11px 20px;
+    border-bottom: 1px solid #f1f4f6;
+  }
+  .record-card:last-child { border-bottom: none; }
+  .record-card:hover { background: #fafcfb; }
+  .record-card .c-date,
+  .record-card .c-content,
+  .record-card .c-bet,
+  .record-card .c-win,
+  .record-card .c-profit,
+  .record-card .c-photo,
+  .record-card .c-actions {
+    width: auto; margin: 0; text-align: left; font-size: 13.5px;
+  }
+  .record-card .c-date { color: #868e96; font-size: 13px; }
+  .record-card .c-content { font-weight: 600; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .record-card .c-bet, .record-card .c-win, .record-card .c-profit { text-align: right; font-variant-numeric: tabular-nums; }
+  .record-card .c-bet { color: #495057; }
+  .record-card .c-bet::before, .record-card .c-win.win::before { content: none; }
+  .record-card .c-win { font-size: 13.5px; }
+  .record-card .c-win.win { color: #e74c3c; }
+  .record-card .c-win.loss { color: #adb5bd; }
+  .record-card .c-profit { font-size: 13px; }
+  .record-card .c-profit.is-zero { display: block; color: #ced4da; }
+  .record-card .c-photo { display: flex; justify-content: center; }
+  .record-card .c-photo:has(.no-photo) { display: flex; }
+  .record-card .c-photo .no-photo { display: inline; color: #ced4da; font-size: 13px; }
+  .record-card .c-photo .photo-thumb { width: 44px; height: 44px; border-radius: 6px; margin: 0; }
+  .record-card .c-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .record-card .c-actions button { flex: 0 0 auto; padding: 6px 14px; }
+
+  /* 统计页 */
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .streak-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .chart-box { height: 360px; }
+  .chart-container, .stat-card, .streak-card { border-radius: 14px; }
+  .stat-card { padding: 18px 10px; }
+  .stat-card .stat-value { font-size: 20px; }
+  .page-settings { max-width: 860px; margin: 0 auto; }
+  .setting-item { border-radius: 12px; padding: 18px 18px; }
+  .setting-item:hover { background: #f8f9fa; }
+  .setting-item:active { transform: none; }
+
+  /* 弹窗在桌面改为居中对话框 */
+  .modal-overlay { align-items: center; padding: 24px; }
+  .modal {
+    width: min(640px, 100%); max-width: none; border-radius: 16px;
+    max-height: 86vh;
+    animation: modalPop .22s cubic-bezier(.32,.72,0,1);
+    padding: 26px 28px;
+  }
+  @keyframes modalPop { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .form-group input, .form-group textarea { padding: 12px 14px; }
+  .confirm-dialog .dialog-box { max-width: 420px; }
+  .image-viewer img { max-width: 86vw; max-height: 84vh; }
+
+  /* 空状态在桌面保持居中 */
+  .empty-state { padding: 72px 20px; }
+}
+
+/* ===================== v3 精致化：只覆盖视觉，不动布局结构/数据 ===================== */
+:root {
+  --grn: #05944f; --grn-deep: #047a41; --grn-soft: rgba(5,148,79,.09);
+  --win: #c62828; --lose: #98a2b3;
+  --ink: #182230; --ink2: #475467; --ink3: #98a2b3;
+  --line: #e7ebf0;
+  --r-lg: 16px; --r-md: 12px;
+  --sh-sm: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --sh-md: 0 2px 4px rgba(16,24,40,.05), 0 12px 28px -10px rgba(16,24,40,.16);
+}
+
+/* 交互反馈：可聚焦元素统一高亮 */
+.btn:focus-visible, .edit-btn:focus-visible, .tab-item:focus-visible,
+input:focus-visible, textarea:focus-visible, select:focus-visible,
+.record-card button:focus-visible { outline: 2px solid rgba(5,148,79,.55); outline-offset: 2px; }
+input, textarea, select { caret-color: #05944f; }
+
+/* 通用弹层背景统一 */
+.modal-overlay, .confirm-dialog { backdrop-filter: blur(3px); }
+
+@media (min-width: 1024px) {
+  /* 页面底纹：左上角一抹品牌光晕，更透气 */
+  body {
+    background:
+      radial-gradient(900px 420px at 85% -10%, rgba(5,148,79,.07), transparent 62%),
+      radial-gradient(700px 380px at -10% 110%, rgba(231,76,60,.04), transparent 60%),
+      #f4f6f9;
+  }
+
+  /* —— 左侧导航精致化 —— */
+  .tab-bar { background: #ffffff; box-shadow: none; }
+  .nav-brand {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    padding: 4px 8px 24px; color: var(--ink);
+  }
+  .nav-brand .brand-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 12px; font-size: 20px;
+    background: linear-gradient(135deg, #0aa75c, #047a41);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 14px -4px rgba(5,148,79,.55);
+  }
+  .nav-brand .brand-name { font-size: 17px; font-weight: 800; letter-spacing: .01em; color: var(--ink); }
+  .nav-brand::after {
+    content: ''; position: absolute; left: 10px; right: 10px; bottom: 12px;
+    height: 1px; background: linear-gradient(90deg, var(--line), transparent);
+  }
+  .nav-group { gap: 4px; padding: 6px 0; }
+  .tab-item { position: relative; font-weight: 600; color: var(--ink2); }
+  .tab-item .icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 9px; background: #f2f4f7;
+    font-size: 15px; transition: background .15s, transform .15s;
+  }
+  .tab-item.active { background: transparent; }
+  .tab-item.active::before {
+    content: ''; position: absolute; left: -14px; top: 20%; bottom: 20%;
+    width: 4px; border-radius: 4px; background: linear-gradient(var(--grn), #12b76a);
+  }
+  .tab-item.active .icon { background: var(--grn-soft); transform: scale(1.05); }
+  .tab-item.active { color: var(--grn-deep); font-weight: 700; }
+  .tab-item:not(.active):hover { background: #f6f8fa; color: #1d2939; }
+
+  /* —— 主内容区 —— */
+  .app-main { padding: 30px 40px 72px; }
+  .page { max-width: 1200px; }
+
+  /* —— 页头：标题带品牌竖条 —— */
+  .page-title { position: relative; padding-left: 14px; font-size: 20px; letter-spacing: .01em; }
+  .page-title::before {
+    content: ''; position: absolute; left: 0; top: 3px; bottom: 3px; width: 4px;
+    border-radius: 4px; background: linear-gradient(180deg, #12b76a, var(--grn));
+  }
+  .add-btn {
+    background: linear-gradient(180deg, #0aa75c, #047a41);
+    box-shadow: 0 6px 16px -6px rgba(5,148,79,.55), inset 0 1px 0 rgba(255,255,255,.18);
+    transition: transform .12s, box-shadow .15s;
+  }
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -8px rgba(5,148,79,.6), inset 0 1px 0 rgba(255,255,255,.2); }
+  .add-btn:active { transform: translateY(0); }
+
+  /* —— 资金池主卡 —— */
+  .capital-card {
+    position: relative; overflow: hidden;
+    padding: 30px 34px; border-radius: 20px;
+    background: linear-gradient(135deg, #06ae56 0%, #048a43 58%, #056b38 100%);
+    box-shadow: 0 14px 30px -12px rgba(5,148,79,.45), 0 2px 6px rgba(5,148,79,.14);
+  }
+  .capital-card::before {
+    content: ''; position: absolute; right: -90px; top: -110px; width: 260px; height: 260px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.16), transparent 68%);
+    pointer-events: none;
+  }
+  .capital-card::after {
+    content: ''; position: absolute; right: 8%; bottom: -70px; width: 150px; height: 150px;
+    border-radius: 50%; border: 1.5px solid rgba(255,255,255,.10);
+    pointer-events: none;
+  }
+  .cap-main { position: relative; z-index: 1; }
+  .capital-card .label {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; letter-spacing: .1em; opacity: .92;
+  }
+  .capital-card .label::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #7ef0b0; box-shadow: 0 0 0 4px rgba(126,240,176,.2); }
+  .capital-card .amount { font-size: 52px; font-weight: 800; margin-top: 8px; letter-spacing: -.02em; text-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .cap-actions .edit-btn {
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+    backdrop-filter: blur(6px); font-weight: 600; letter-spacing: .02em;
+    transition: background .15s, transform .12s;
+  }
+  .cap-actions .edit-btn:hover { background: rgba(255,255,255,.3); transform: translateY(-1px); }
+  .capital-card .inline-edit { position: relative; z-index: 1; }
+
+  /* —— 月份面板 —— */
+  .month-group { border: 1px solid #eef1f5; box-shadow: var(--sh-sm); }
+  .month-header {
+    padding: 15px 22px; background: linear-gradient(180deg, #ffffff, #fafcfd);
+    transition: background .15s;
+  }
+  .month-header:hover { background: #ffffff; }
+  .month-arrow {
+    width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 7px; background: #f2f4f7; font-size: 9px; color: #667085;
+  }
+  .month-arrow.open { background: var(--grn-soft); color: var(--grn); }
+  .month-label { font-size: 16px; letter-spacing: .01em; }
+  .month-meta { font-size: 12px; color: var(--ink3); }
+  .month-pnl { font-weight: 700; }
+  .month-del {
+    font-size: 12px; color: var(--ink3); border-radius: 8px;
+    padding: 5px 10px; transition: background .15s, color .15s;
+  }
+
+  /* —— 表格头/行 —— */
+  .rec-head {
+    background: #f8fafb; color: var(--ink3); font-size: 11.5px;
+    letter-spacing: .06em; border-bottom: 1px solid var(--line);
+  }
+  .record-card { transition: background .13s; border-bottom: 1px solid #f0f3f6; }
+  .record-card:hover { background: #f6faf7; }
+  .record-card .c-date { color: var(--ink3); font-variant-numeric: tabular-nums; }
+  .record-card .c-content { color: var(--ink); }
+  .record-card .c-bet { color: var(--ink2); font-weight: 600; }
+  .record-card .c-win.win { color: var(--win); font-weight: 800; }
+  .record-card .c-win.loss { color: var(--lose); font-weight: 600; }
+  .record-card .c-profit { font-weight: 700; }
+  .record-card .c-profit.positive { color: #0b8f50; }
+  .record-card .c-profit.negative { color: var(--win); }
+  .record-card .c-profit.is-zero { color: #cbd2da; font-weight: 500; }
+  .record-card .c-photo .photo-thumb {
+    border-radius: 9px; border: 1px solid #eef1f4;
+    box-shadow: var(--sh-sm); transition: transform .15s, box-shadow .15s;
+  }
+  .record-card .c-photo .photo-thumb:hover { transform: scale(1.06); box-shadow: var(--sh-md); }
+  .record-card .c-photo .no-photo { color: #d0d5dd; }
+  .record-card .c-actions button {
+    border-radius: 8px; font-weight: 600; letter-spacing: .02em;
+    border: 1px solid transparent; transition: background .15s, color .15s, border-color .15s;
+  }
+  .record-card .c-actions .edit-btn2 { background: transparent; color: var(--ink2); border-color: #e4e7ec; }
+  .record-card .c-actions .edit-btn2:hover { background: #f2f4f7; color: var(--ink); }
+  .record-card .c-actions .del-btn { background: transparent; color: var(--win); border-color: #f6d3cf; }
+  .record-card .c-actions .del-btn:hover { background: #fdf1f0; }
+
+  /* —— 统计页 —— */
+  .chart-container, .stat-card, .streak-card { border: 1px solid #eef1f5; box-shadow: var(--sh-sm); }
+  .stat-card { padding: 20px 12px; transition: transform .12s, box-shadow .15s; }
+  .stat-card:hover { transform: translateY(-1px); box-shadow: var(--sh-md); }
+  .stat-card .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+  .stat-card .stat-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--ink3); }
+  .streak-card { padding: 18px 14px; }
+  .streak-card .streak-value { font-size: 27px; font-weight: 800; }
+  .chart-container { padding: 20px 22px; }
+  .chart-container h4 { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .chart-container select {
+    border-radius: 8px; padding: 6px 12px; background: #fff;
+    border: 1px solid var(--line); color: var(--ink2); font-weight: 500;
+  }
+
+  /* —— 设置页 —— */
+  .setting-item { border: 1px solid #eef1f5; box-shadow: var(--sh-sm); transition: transform .12s, box-shadow .15s, border-color .15s; }
+  .setting-item:hover { background: #fafbfc; border-color: #e2e8ee; transform: translateY(-1px); box-shadow: var(--sh-md); }
+  .setting-title { font-weight: 600; letter-spacing: .01em; }
+
+  /* —— 弹窗精致化 —— */
+  .modal-overlay { background: rgba(15,23,32,.42); }
+  .modal { border-radius: 18px; box-shadow: 0 24px 60px -16px rgba(15,23,32,.35); }
+  .modal h3 { text-align: left; font-size: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .modal .form-actions { padding-top: 4px; }
+  .confirm-dialog .dialog-box { border-radius: 16px; }
+}
+
+/* =========================================================
+   THEME v4 · 高级感
+   墨玉导航 + 纸白内容 + 翡翠点缀(覆盖旧色板;结构与功能不变)
+   ========================================================= */
+:root {
+  --grn: #149a63; --grn-deep: #0c6b42; --grn-soft: rgba(20,154,99,.10);
+  --ink: #1c2b24; --ink2: #4c5b53; --ink3: #93a199;
+  --line: #e4eae4;
+  --paper: #ffffff;
+  --canvas: #eef1ec;
+  --r-lg: 18px; --r-md: 13px;
+  --sh-sm: 0 1px 2px rgba(24,44,34,.04), 0 2px 6px rgba(24,44,34,.05);
+  --sh-md: 0 6px 18px -8px rgba(24,44,34,.16), 0 2px 4px rgba(24,44,34,.05);
+  --win: #cf4436;
+}
+
+/* —— 底色与字体 —— */
+body { background: var(--canvas); color: var(--ink); }
+.app-main, .page, #recordList, .page-settings { color: var(--ink); }
+
+/* —— 卡片统一「纸片描边」质感(移动端记录卡保持无描边卡片) —— */
+.stat-card, .streak-card, .chart-container, .setting-item {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-sm);
+  border-radius: var(--r-md);
+}
+.month-group { border: 1px solid var(--line); box-shadow: var(--sh-sm); }
+@media (max-width: 1023px) {
+  .record-card { border: none; box-shadow: var(--sh-sm); }
+  .record-card.win { border-left: 3px solid var(--win); }
+  .capital-card { border-radius: 16px; }
+  .capital-card .amount { font-size: 42px; }
+}
+
+/* —— 品牌动作按钮:翡翠渐变 —— */
+.btn-primary, .add-btn {
+  background: linear-gradient(180deg, #1aa464, #0d7c4b);
+  border: none;
+  box-shadow: 0 6px 14px -6px rgba(13,124,75,.55), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-primary:hover, .add-btn:hover { background: linear-gradient(180deg, #12a05e, #0b6f43); }
+.btn-danger { background: #fff; color: var(--win); border: 1px solid rgba(207,68,54,.35); }
+
+/* —— 顶部资金卡:墨绿深邃渐变 —— */
+.capital-card {
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(120% 160% at 88% -20%, rgba(120,220,170,.18), transparent 55%),
+    linear-gradient(135deg, #0f402a 0%, #0a2f1f 55%, #072117 100%);
+  box-shadow: 0 18px 40px -18px rgba(10,47,31,.6);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.capital-card::before {
+  content: ''; position: absolute; right: -80px; top: -120px; width: 260px; height: 260px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.10), transparent 66%);
+}
+.capital-card::after { content: ''; position: absolute; right: 10%; bottom: -90px; width: 180px; height: 180px; border-radius: 50%; border: 1px solid rgba(255,255,255,.07); }
+.cap-main { position: relative; z-index: 1; }
+.capital-card .label { color: rgba(235,246,240,.72); opacity: 1; font-weight: 600; }
+.capital-card .label::before { background: #8ce6b8; box-shadow: 0 0 0 4px rgba(140,230,184,.16); }
+.capital-card .amount { color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.capital-card .edit-btn {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+  color: #eafff3; backdrop-filter: blur(8px);
+}
+.capital-card .edit-btn:hover { background: rgba(255,255,255,.22); }
+.inline-edit input { background: rgba(255,255,255,.95); }
+.capital-card .inline-edit button { background: rgba(255,255,255,.24); color: #fff; }
+
+/* —— 文字层级 —— */
+.page-title { color: var(--ink); font-size: 21px; }
+.month-label { color: var(--ink); }
+.month-meta, .c-date { color: var(--ink3); }
+.c-content { color: var(--ink); }
+.c-bet, .bet-amount { color: var(--ink2); }
+.record-card .c-win.win, .record-card .win-amount.win { color: var(--win); }
+.record-card .c-win.loss, .record-card .win-amount.loss { color: var(--ink3); }
+.c-profit.positive, .record-card .c-profit.positive, .profit.positive, .month-pnl.positive { color: var(--grn-deep); }
+.c-profit.negative, .record-card .c-profit.negative, .profit.negative, .month-pnl.negative { color: var(--win); }
+.stat-card .stat-value.red { color: var(--win); }
+.stat-card .stat-value.green { color: var(--grn-deep); }
+
+/* —— 图表区标题、选择框 —— */
+.chart-container h4 { color: var(--ink); }
+.chart-container select { background: #fff; border: 1px solid var(--line); color: var(--ink2); }
+.stat-label, .streak-label { color: var(--ink3); }
+.stat-value { color: var(--ink); }
+
+/* —— 表格操作按钮:描边幽灵 —— */
+.record-card .c-actions .edit-btn2 { background: #fff; color: var(--ink2); border: 1px solid var(--line); }
+.record-card .c-actions .del-btn { background: #fff; color: var(--win); border: 1px solid rgba(207,68,54,.30); }
+.record-card .c-actions button:hover { opacity: .85; }
+
+/* —— 设置页 —— */
+.setting-title { color: var(--ink); }
+.setting-desc { color: var(--ink3); }
+
+/* —— 弹窗 —— */
+.modal-overlay, .confirm-dialog { background: rgba(16,28,22,.5); }
+.modal { background: var(--paper); border-radius: var(--r-lg); box-shadow: 0 24px 70px -18px rgba(8,20,14,.45); }
+.modal h3 { color: var(--ink); }
+.form-group label { color: var(--ink3); }
+.form-group input, .form-group textarea { background: #fbfcfb; border-color: var(--line); color: var(--ink); }
+.form-group input:focus, .form-group textarea:focus { border-color: var(--grn); box-shadow: 0 0 0 3px rgba(20,154,99,.10); background: #fff; }
+.confirm-dialog .dialog-box { background: var(--paper); box-shadow: 0 24px 60px -18px rgba(8,20,14,.4); }
+.dialog-msg { color: var(--ink); }
+.confirm-btn { background: linear-gradient(180deg, #d05446, #bd3d30); }
+
+/* —— 空状态 —— */
+.empty-state { color: var(--ink3); }
+.empty-state .empty-icon { opacity: .5; }
+
+/* =========================================================
+   DESKTOP ≥1024:墨玉深色侧栏 + 排版升级
+   ========================================================= */
+@media (min-width: 1024px) {
+  body {
+    background:
+      radial-gradient(1000px 500px at 82% -8%, rgba(20,154,99,.05), transparent 60%),
+      var(--canvas);
+  }
+  .page { max-width: 1200px; }
+  .app-main { padding: 34px 44px 80px; }
+
+  /* —— 侧栏深色墨玉 —— */
+  .tab-bar {
+    width: 250px; max-width: 250px;
+    background: linear-gradient(180deg, #0f2b1e, #0a1f16 70%, #081a12);
+    border-right: none;
+    box-shadow: 1px 0 0 rgba(255,255,255,.03), 12px 0 40px -24px rgba(6,20,14,.55);
+  }
+  .app-main { margin-left: 250px; }
+  .nav-brand { color: #eaf7f0; }
+  .nav-brand .brand-name { color: #f1faf5; letter-spacing: .04em; }
+  .nav-brand::after { background: linear-gradient(90deg, rgba(140,230,184,.28), transparent); }
+  .nav-brand .brand-badge {
+    background: linear-gradient(135deg, #22b06f, #0e7a4a);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 8px 18px -6px rgba(24,176,110,.55);
+  }
+  .tab-item { color: #a9c4b5; font-weight: 500; }
+  .tab-item .icon { background: rgba(255,255,255,.06); color: #d7e9df; }
+  .tab-item:not(.active):hover { background: rgba(255,255,255,.05); color: #e9f6ef; }
+  .tab-item.active { background: linear-gradient(90deg, rgba(34,176,111,.20), rgba(34,176,111,.05)); color: #ffffff; font-weight: 700; }
+  .tab-item.active .icon { background: rgba(34,176,111,.32); color: #fff; transform: scale(1.03); }
+  .tab-item.active::before { background: linear-gradient(#2fc685, #149a63); }
+
+  /* —— 资金卡在深色导航旁更具悬浮感 —— */
+  .capital-card { border-radius: 22px; }
+  .capital-card .amount { font-size: 56px; }
+
+  /* —— 月份面板与表 —— */
+  .month-group { background: var(--paper); border-radius: var(--r-lg); overflow: hidden; }
+  .month-header { background: linear-gradient(180deg, #fdfefe, #f7faf7); border-bottom: 1px solid var(--line); }
+  .month-header:hover { background: #fbfdfb; }
+  .month-arrow { background: #eef3ef; color: var(--ink3); }
+  .month-arrow.open { background: rgba(20,154,99,.14); color: var(--grn-deep); }
+  .month-del { color: var(--ink3); }
+  .month-del:hover { background: rgba(207,68,54,.08); color: var(--win); }
+  .rec-head {
+    background: #f6f8f5; color: var(--ink3);
+    border-bottom: 1px solid var(--line);
+    font-weight: 600; letter-spacing: .08em;
+  }
+  .record-card { background: var(--paper); border: none; border-bottom: 1px solid #eef2ee; }
+  .record-card.win { border-left: none; border-bottom: 1px solid #eef2ee; }
+  .record-card:last-child { border-bottom: none; }
+  .record-card:hover { background: #f4f9f5; }
+  .record-card .c-date { font-size: 12.5px; }
+  .record-card .c-content { font-weight: 600; }
+  .record-card .c-photo .photo-thumb { border: 1px solid #e9efe9; box-shadow: var(--sh-sm); }
+  .record-card .c-photo .no-photo { color: #c8d2cb; }
+
+  /* —— 数据卡 —— */
+  .stat-card { border-radius: 16px; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+  .stat-value { font-size: 23px; }
+  .stat-label { font-size: 11px; letter-spacing: .09em; }
+  .streak-card { border-radius: 16px; }
+  .chart-container { border-radius: var(--r-lg); }
+  .chart-box { height: 380px; }
+
+  /* —— 设置列表 —— */
+  .page-settings { max-width: 860px; }
+  .setting-item { border-radius: 14px; }
+  .setting-item:hover { border-color: #d7e2da; background: #fbfdfb; transform: translateY(-1px); box-shadow: var(--sh-md); }
+  .setting-item:active { transform: none; }
+
+  /* —— 弹窗 —— */
+  .modal-overlay { padding: 32px; }
+  .modal { width: min(660px, 100%); border-radius: 20px; }
+  .form-actions .btn { border-radius: 12px; }
+  .confirm-dialog .dialog-box { border-radius: var(--r-lg); }
+  .image-viewer img { border-radius: 6px; }
+
+  /* 统计页下拉(覆盖 HTML 内联旧样式) */
+  #statsMonthFilter, #chartMonthFilter, #streakMonthFilter {
+    padding: 6px 12px !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+    color: var(--ink2) !important;
+    font-size: 13px !important;
+    box-shadow: none !important;
+  }
+}
 </style>
 </head>
 <body>
 
+<main class="app-main">
 <!-- 明细页 -->
 <div class="page active" id="page-detail">
   <div class="capital-card" id="capitalCard">
-    <div class="label">总资金池</div>
-    <div class="amount" id="capitalAmount">¥0.00</div>
-    <button class="edit-btn" onclick="showCapitalEdit()">修改初始本金</button>
-    <button class="edit-btn" onclick="showTopupEdit()" style="margin-left:6px">补充资金</button>
+    <div class="cap-main">
+      <div class="cap-info">
+        <div class="label">总资金池</div>
+        <div class="amount" id="capitalAmount">¥0.00</div>
+      </div>
+      <div class="cap-actions">
+        <button class="edit-btn" onclick="showCapitalEdit()">修改初始本金</button>
+        <button class="edit-btn" onclick="showTopupEdit()">补充资金</button>
+      </div>
+    </div>
     <div class="inline-edit" id="capitalEdit" style="display:none">
       <input type="number" id="capitalInput" placeholder="输入初始本金" step="0.01">
       <button onclick="saveCapital()">保存</button>
@@ -260,8 +839,12 @@ body {
       <button onclick="saveTopup()">保存</button>
     </div>
   </div>
-  <button class="btn btn-primary" onclick="showAddModal()">+ 新建投注记录</button>
-  <div id="recordList" style="margin-top:14px"></div>
+
+  <div class="page-toolbar">
+    <h2 class="page-title">投注记录</h2>
+    <button class="btn btn-primary add-btn" onclick="showAddModal()">＋ 新建投注记录</button>
+  </div>
+  <div id="recordList"></div>
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">📋</div>
     <p>还没有投注记录</p>
@@ -285,7 +868,7 @@ body {
         <option value="">全部</option>
       </select>
     </div>
-    <div style="height:240px;position:relative"><canvas id="trendChart"></canvas></div>
+    <div class="chart-box"><canvas id="trendChart"></canvas></div>
   </div>
   <div class="chart-container">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -318,19 +901,23 @@ body {
     <span class="arrow">›</span>
   </div>
 </div>
+</main>
 
-<!-- 底部导航 -->
-<div class="tab-bar">
-  <div class="tab-item active" data-tab="detail" onclick="switchTab('detail')">
-    <span class="icon">📋</span>明细
+<!-- 导航 -->
+<nav class="tab-bar">
+  <div class="nav-brand"><span class="brand-badge">⚽</span><span class="brand-name">足球书记员</span></div>
+  <div class="nav-group">
+    <div class="tab-item active" data-tab="detail" onclick="switchTab('detail')">
+      <span class="icon">📋</span>明细
+    </div>
+    <div class="tab-item" data-tab="stats" onclick="switchTab('stats')">
+      <span class="icon">📊</span>统计
+    </div>
+    <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">
+      <span class="icon">⚙️</span>设置
+    </div>
   </div>
-  <div class="tab-item" data-tab="stats" onclick="switchTab('stats')">
-    <span class="icon">📊</span>统计
-  </div>
-  <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">
-    <span class="icon">⚙️</span>设置
-  </div>
-</div>
+</nav>
 
 <!-- 新增/编辑记录弹窗 -->
 <div class="modal-overlay" id="recordModal">
@@ -503,23 +1090,35 @@ function renderDetail() {
           <button class="month-del" onclick="event.stopPropagation();confirmDeleteMonth('${m}')">删除本月</button>
         </div>
         <div class="month-body" style="${expanded ? '' : 'display:none'}">
+          <div class="rec-head">
+            <span class="rh-date">日期</span>
+            <span class="rh-content">投注内容</span>
+            <span class="rh-bet">投注金额</span>
+            <span class="rh-win">中奖金额</span>
+            <span class="rh-profit">盈亏</span>
+            <span class="rh-photo">票据</span>
+            <span class="rh-actions">操作</span>
+          </div>
           ${g.bets.map(b => {
             const win = parseFloat(b.winAmount) || 0;
             const bet = parseFloat(b.betAmount) || 0;
             const profit = win - bet;
             const winClass = win > 0 ? 'win' : 'loss';
             const profitClass = profit >= 0 ? 'positive' : 'negative';
+            const winText = win > 0 ? formatMoney(win) : '';
+            const profitText = profit !== 0 ? (profit >= 0 ? '+' : '') + formatMoney(profit) : '';
+            const photoHtml = b.photo
+              ? `<img class="photo-thumb" src="${b.photo}" onclick="event.stopPropagation();viewImage('${b.photo}')" alt="彩票照片">`
+              : '<span class="no-photo">—</span>';
             return `
-              <div class="record-card">
-                <div class="date">${b.date}</div>
-                <div class="content">${escapeHtml(b.content)}</div>
-                <div class="row">
-                  <span class="bet-amount">投注 ${formatMoney(bet)}</span>
-                  <span class="win-amount ${winClass}">${win > 0 ? '中奖 ' + formatMoney(win) : '未中奖'}</span>
-                </div>
-                ${profit !== 0 ? `<div style="text-align:right;margin-top:4px"><span class="profit ${profitClass}">${profit >= 0 ? '+' : ''}${formatMoney(profit)}</span></div>` : ''}
-                ${b.photo ? `<img class="photo-thumb" src="${b.photo}" onclick="event.stopPropagation();viewImage('${b.photo}')" alt="彩票照片">` : ''}
-                <div class="actions">
+              <div class="record-card ${winClass}">
+                <span class="c-date">${b.date}</span>
+                <div class="c-content" title="${escapeHtml(b.content)}">${escapeHtml(b.content)}</div>
+                <span class="c-bet">${formatMoney(bet)}</span>
+                <span class="c-win ${winClass}">${winText || '未中奖'}</span>
+                <span class="c-profit ${profitClass} ${profit === 0 ? 'is-zero' : ''}">${profitText || '—'}</span>
+                <div class="c-photo">${photoHtml}</div>
+                <div class="c-actions">
                   <button class="edit-btn2" onclick="showEditModal('${b.id}')">编辑</button>
                   <button class="del-btn" onclick="confirmDelete('${b.id}')">删除</button>
                 </div>

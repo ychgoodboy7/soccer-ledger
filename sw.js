@@ -1,4 +1,4 @@
-const CACHE = 'soccer-v3';
+const CACHE = 'soccer-v6';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -25,3 +25,4 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(r => r || fetch(e.request))
   );
 });
+
